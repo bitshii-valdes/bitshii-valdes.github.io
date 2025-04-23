@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Spotify Authentication Callback</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px 20px;
+      background-color: #1DB954; /* Spotify green */
+      color: white;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 30px;
+      border-radius: 10px;
+    }
+    h1 {
+      margin-top: 0;
+    }
+    #manual-link {
+      display: inline-block;
+      background-color: white;
+      color: #1DB954;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 30px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    #countdown {
+      font-size: 1.5em;
+      margin: 20px 0;
+    }
+  </style>
+  <script>
+    function redirectToApp() {
+      // Get the authorization code from the URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      const state = urlParams.get('state');
+      
+      // Check if there's an error
+      const error = urlParams.get('error');
+      if (error) {
+        document.getElementById('status').innerText = 'Authentication Error: ' + error;
+        return;
+      }
+      
+      // If no code is present, show error
+      if (!code) {
+        document.getElementById('status').innerText = 'No authorization code found in URL.';
+        return;
+      }
+      
+      // Build the redirect URL to your custom scheme
+      let redirectUrl = 'mysputy://callback';
+      
+      // Add the authorization code
+      if (code) {
+        redirectUrl += '?code=' + encodeURIComponent(code);
+      }
+      
+      // Add state if present
+      if (state) {
+        redirectUrl += (code ? '&' : '?') + 'state=' + encodeURIComponent(state);
+      }
+      
+      // Update the manual link
+      document.getElementById('manual-link').href = redirectUrl;
+      
+      // Try to redirect automatically
+      window.location.href = redirectUrl;
+      
+      // Start countdown for manual redirect
+      let seconds = 5;
+      const countdownElement = document.getElementById('countdown');
+      
+      const interval = setInterval(function() {
+        seconds--;
+        countdownElement.innerText = seconds;
+        
+        if (seconds <= 0) {
+          clearInterval(interval);
+          countdownElement.innerText = "Redirect didn't happen automatically";
+        }
+      }, 1000);
+    }
+    
+    // Run when the page loads
+    window.onload = redirectToApp;
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>Redirecting to Your App</h1>
+    <p id="status">Authentication successful! Redirecting back to the app...</p>
+    <p>Redirecting in <span id="countdown">5</span> seconds...</p>
+    <a id="manual-link" href="#">Tap here if not redirected automatically</a>
+  </div>
+</body>
+</html>
